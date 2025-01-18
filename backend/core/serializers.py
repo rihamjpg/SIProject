@@ -1,88 +1,131 @@
-from rest_framework import serializers 
-from .models import Employee, Service, Contract, Leave, Salary, Pointage, Recruitment
-from django.contrib.auth import get_user_model
+from rest_framework import serializers
+from .models import (
+    Employe, Service, Contrat, Conge, Salaire, 
+    Massrouf, Recrutement, Candidat, Candidature,
+    Evaluation, Formation, Pointage, Competence,
+    Favori, Archive, Document, Historique
+)
 
 class ServiceSerializer(serializers.ModelSerializer):
+    responsable_name = serializers.CharField(source='id_responsable.nom', read_only=True)
+    
     class Meta:
         model = Service
-        fields = ['id', 'code', 'description']
+        fields = '__all__'
 
-class EmployeeSerializer(serializers.ModelSerializer):
-    service_name = serializers.CharField(source='service.description', read_only=True)
+class EmployeSerializer(serializers.ModelSerializer):
+    service_name = serializers.CharField(source='id_service.nom_service', read_only=True)
+    competences = serializers.StringRelatedField(many=True, read_only=True)
     
     class Meta:
-        model = Employee
-        fields = ['id', 'code', 'nom', 'prenom', 'date_naissance', 
-                 'date_embauche', 'adresse', 'service', 'service_name',
-                 'email', 'telephone']
+        model = Employe
+        fields = '__all__'
+        extra_kwargs = {
+            'piece_identite': {'required': False},
+            'photo': {'required': False},
+        }
 
-class ContractSerializer(serializers.ModelSerializer):
-    employee_name = serializers.CharField(source='employe.nom', read_only=True)
+class ContratSerializer(serializers.ModelSerializer):
+    employe_name = serializers.CharField(source='employe.nom', read_only=True)
     
     class Meta:
-        model = Contract
-        fields = ['id', 'employe', 'employee_name', 'type_contrat', 
-                 'date_debut', 'date_fin', 'salaire_mensuel',
-                 'salaire_journalier', 'archive']
+        model = Contrat
+        fields = '__all__'
 
-class LeaveSerializer(serializers.ModelSerializer):
-    employee_name = serializers.CharField(source='employe.nom', read_only=True)
+class CongeSerializer(serializers.ModelSerializer):
+    employe_name = serializers.CharField(source='employe.nom', read_only=True)
+    valideur_name = serializers.CharField(source='valideur.nom', read_only=True)
     
     class Meta:
-        model = Leave
-        fields = ['id', 'employe', 'employee_name', 'type_conge',
-                 'date_debut', 'date_fin', 'nb_jours',
-                 'justification', 'statut']
+        model = Conge
+        fields = '__all__'
 
-class SalarySerializer(serializers.ModelSerializer):
-    employee_name = serializers.CharField(source='employe.nom', read_only=True)
+class SalaireSerializer(serializers.ModelSerializer):
+    employe_name = serializers.CharField(source='employe.nom', read_only=True)
     
     class Meta:
-        model = Salary
-        fields = ['id', 'employe', 'employee_name', 'mois', 'annee',
-                 'salaire_base', 'primes', 'avance_salaire',
-                 'total_net', 'date_paiement']
+        model = Salaire
+        fields = '__all__'
+
+class MassroufSerializer(serializers.ModelSerializer):
+    employe_name = serializers.CharField(source='employe.nom', read_only=True)
+    
+    class Meta:
+        model = Massrouf
+        fields = '__all__'
+
+class RecrutementSerializer(serializers.ModelSerializer):
+    service_name = serializers.CharField(source='service.nom_service', read_only=True)
+    
+    class Meta:
+        model = Recrutement
+        fields = '__all__'
+
+class CandidatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Candidat
+        fields = '__all__'
+        extra_kwargs = {
+            'mot_de_passe': {'write_only': True},
+            'code_confirmation': {'write_only': True}
+        }
+
+class CandidatureSerializer(serializers.ModelSerializer):
+    candidat_name = serializers.CharField(source='candidat.nom', read_only=True)
+    poste = serializers.CharField(source='recrutement.titre_poste', read_only=True)
+    
+    class Meta:
+        model = Candidature
+        fields = '__all__'
+
+class EvaluationSerializer(serializers.ModelSerializer):
+    employe_name = serializers.CharField(source='employe.nom', read_only=True)
+    evaluateur_name = serializers.CharField(source='evaluateur.nom', read_only=True)
+    
+    class Meta:
+        model = Evaluation
+        fields = '__all__'
+
+class FormationSerializer(serializers.ModelSerializer):
+    formateur_name = serializers.CharField(source='formateur.nom', read_only=True)
+    
+    class Meta:
+        model = Formation
+        fields = '__all__'
 
 class PointageSerializer(serializers.ModelSerializer):
-    employee_name = serializers.CharField(source='employe.nom', read_only=True)
+    employe_name = serializers.CharField(source='employe.nom', read_only=True)
+    validateur_name = serializers.CharField(source='validateur.nom', read_only=True)
     
     class Meta:
         model = Pointage
-        fields = ['id', 'employe', 'employee_name', 'date_pointage',
-                 'present', 'conge']
+        fields = '__all__'
 
-class RecruitmentSerializer(serializers.ModelSerializer):
-    service_name = serializers.CharField(source='service.description', read_only=True)
+class CompetenceSerializer(serializers.ModelSerializer):
+    employes_count = serializers.SerializerMethodField()
     
     class Meta:
-        model = Recruitment
-        fields = ['id', 'titre', 'description', 'type_contrat',
-                 'service', 'service_name', 'date_publication', 'statut']
+        model = Competence
+        fields = '__all__'
+        
+    def get_employes_count(self, obj):
+        return obj.employes.count()
 
-class EmployeeDetailSerializer(EmployeeSerializer):
-    contracts = ContractSerializer(many=True, read_only=True, source='contract_set')
-    leaves = LeaveSerializer(many=True, read_only=True, source='leave_set')
-    salaries = SalarySerializer(many=True, read_only=True, source='salary_set')
-    
-    class Meta(EmployeeSerializer.Meta):
-        fields = EmployeeSerializer.Meta.fields + ['contracts', 'leaves', 'salaries']
-
-User = get_user_model()
-
-class UserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
+class FavoriSerializer(serializers.ModelSerializer):
+    employe_name = serializers.CharField(source='employe.nom', read_only=True)
     
     class Meta:
-        model = User
-        fields = ('id', 'email', 'username', 'password', 
-                 'is_employee', 'is_hr', 'is_manager',
-                 'verification_token')
-        read_only_fields = ('verification_token',)
+        model = Favori
+        fields = '__all__'
 
-    def create(self, validated_data):
-        user = User.objects.create_user(
-            email=validated_data['email'],
-            username=validated_data['username'],
-            password=validated_data['password']
-        )
-        return user
+class DocumentSerializer(serializers.ModelSerializer):
+    employe_name = serializers.CharField(source='employe.nom', read_only=True)
+    
+    class Meta:
+        model = Document
+        fields = '__all__'
+
+class HistoriqueSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Historique
+        fields = '__all__'

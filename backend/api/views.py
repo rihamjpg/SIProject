@@ -1,149 +1,229 @@
-from django.shortcuts import get_object_or_404
-from datetime import datetime, timedelta, timezone
 from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
-from core.services import calculate_salary, manage_leave, generate_report
+from django.db.models import Count, Avg, Sum
+from datetime import datetime, timedelta
 from core.models import *
 from core.serializers import *
+from .filters import *
 
+class EmployeViewSet(viewsets.ModelViewSet):
+    queryset = Employe.objects.all()
+    serializer_class = EmployeSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_class = EmployeFilter
+    search_fields = ['nom', 'prenom', 'matricule', 'email_pro']
 
-class EmployeeViewSet(viewsets.ModelViewSet):
-    queryset = Employee.objects.all()
-    serializer_class = EmployeeSerializer
-    
-    @action(detail=True, methods=['get'])
-    def salary_calculation(self, request, pk=None):
-        month = int(request.query_params.get('month', datetime.now().month))
-        year = int(request.query_params.get('year', datetime.now().year))
-        
-        salary_data = calculate_salary(pk, month, year)
-        if salary_data:
-            return Response(salary_data)
-        return Response({'error': 'Cannot calculate salary'}, status=status.HTTP_400_BAD_REQUEST)
-    
+    @action(detail=False)
+    def dashboard(self, request):
+        stats = {
+            'total': self.queryset.filter(actif=True).count(),
+            'by_service': self.queryset.filter(actif=True).values('id_service__nom_service').annotate(count=Count('id_employe')),
+            'by_education': self.queryset.filter(actif=True).values('niveau_etudes').annotate(count=Count('id_employe'))
+        }
+        return Response(stats)
+
 class ServiceViewSet(viewsets.ModelViewSet):
     queryset = Service.objects.all()
     serializer_class = ServiceSerializer
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['code', 'description']
-
-class ContractViewSet(viewsets.ModelViewSet):
-    queryset = Contract.objects.all()
-    serializer_class = ContractSerializer
+    permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filterset_fields = ['type_contrat', 'archive']
-    search_fields = ['employe__nom']
+    filterset_fields = ['actif']
+    search_fields = ['code_service', 'nom_service']
 
-    @action(detail=False, methods=['get'])
+    @action(detail=True)
+    def employees(self, request, pk=None):
+        service = self.get_object()
+        employees = service.employes.all()
+        serializer = EmployeSerializer(employees, many=True)
+        return Response(serializer.data)
+
+class ContratViewSet(viewsets.ModelViewSet):
+    queryset = Contrat.objects.all()
+    serializer_class = ContratSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ContratFilter
+
+    @action(detail=False)
     def expiring_soon(self, request):
-        """Get contracts expiring in the next 30 days"""
-        thirty_days = timezone.now().date() + timedelta(days=30)
-        contracts = Contract.objects.filter(
+        thirty_days = datetime.now().date() + timedelta(days=30)
+        contracts = self.queryset.filter(
             date_fin__lte=thirty_days,
             archive=False
         )
         serializer = self.get_serializer(contracts, many=True)
         return Response(serializer.data)
 
-# class SalaryViewSet(viewsets.ModelViewSet):
-#     queryset = Salary.objects.all()
-#     serializer_class = SalarySerializer
-#     filter_backends = [DjangoFilterBackend]
-#     filterset_fields = ['mois', 'annee']
-
-#     @action(detail=False, methods=['post'])
-#     def process_monthly_payroll(self, request):
-#         """Process payroll for all employees"""
-#         month = request.data.get('month')
-#         year = request.data.get('year')
-#         employees = Employee.objects.all()
-#         results = []
-        
-#         for employee in employees:
-#             salary_data = calculate_salary(employee.id, month, year)
-#             if salary_data:
-#                 salary = Salary.objects.create(
-#                     employe=employee,
-#                     mois=month,
-#                     annee=year,
-#                     **salary_data
-#                 )
-#                 results.append(self.get_serializer(salary).data)
-        
-#         return Response(results)
-
-
-class LeaveViewSet(viewsets.ModelViewSet):
-    queryset = Leave.objects.all()
-    serializer_class = LeaveSerializer
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+class CongeViewSet(viewsets.ModelViewSet):
+    queryset = Conge.objects.all()
+    serializer_class = CongeSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
     filterset_fields = ['type_conge', 'statut']
-    search_fields = ['employe__nom']
 
     @action(detail=False)
-    def pending_approvals(self, request):
+    def pending(self, request):
         leaves = self.queryset.filter(statut='DEMANDE')
         serializer = self.get_serializer(leaves, many=True)
         return Response(serializer.data)
 
-class SalaryViewSet(viewsets.ModelViewSet):
-    queryset = Salary.objects.all()
-    serializer_class = SalarySerializer
+    @action(detail=False)
+    def statistics(self, request):
+        year = datetime.now().year
+        stats = {
+            'total_leaves': self.queryset.filter(date_debut__year=year).count(),
+            'by_type': self.queryset.filter(date_debut__year=year).values('type_conge').annotate(count=Count('id'))
+        }
+        return Response(stats)
+
+class SalaireViewSet(viewsets.ModelViewSet):
+    queryset = Salaire.objects.all()
+    serializer_class = SalaireSerializer
+    permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['mois', 'annee']
+    filterset_fields = ['mois', 'annee', 'employe']
 
     @action(detail=False, methods=['post'])
     def process_monthly(self, request):
         month = request.data.get('month')
         year = request.data.get('year')
+        employees = Employe.objects.filter(actif=True)
         processed = []
         
-        for employee in Employee.objects.all():
-            salary_data = calculate_salary(employee.id, month, year)
-            if salary_data:
-                salary = Salary.objects.create(
+        for employee in employees:
+            contract = Contrat.objects.filter(employe=employee, archive=False).first()
+            if contract:
+                salary = Salaire.objects.create(
                     employe=employee,
+                    contrat=contract,
+                    date_paiement=datetime.now().date(),
                     mois=month,
                     annee=year,
-                    **salary_data
+                    salaire_base=contract.salaire_base,
+                    montant_final=contract.salaire_base,
+                    mode_paiement='VIREMENT',
+                    statut_paiement='EN_ATTENTE'
                 )
                 processed.append(self.get_serializer(salary).data)
         return Response(processed)
 
+class MassroufViewSet(viewsets.ModelViewSet):
+    queryset = Massrouf.objects.all()
+    serializer_class = MassroufSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['statut', 'employe']
+
+class RecrutementViewSet(viewsets.ModelViewSet):
+    queryset = Recrutement.objects.all()
+    serializer_class = RecrutementSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['statut', 'urgent', 'service']
+    search_fields = ['titre_poste', 'reference_poste']
+
+    @action(detail=False)
+    def statistics(self, request):
+        stats = {
+            'total_active': self.queryset.filter(statut='OUVERT').count(),
+            'by_service': self.queryset.values('service__nom_service').annotate(count=Count('id')),
+            'urgent_posts': self.queryset.filter(urgent=True).count()
+        }
+        return Response(stats)
+
+class CandidatViewSet(viewsets.ModelViewSet):
+    queryset = Candidat.objects.all()
+    serializer_class = CandidatSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['nom', 'prenom', 'email']
+
+class CandidatureViewSet(viewsets.ModelViewSet):
+    queryset = Candidature.objects.all()
+    serializer_class = CandidatureSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['statut', 'recrutement']
+
+class EvaluationViewSet(viewsets.ModelViewSet):
+    queryset = Evaluation.objects.all()
+    serializer_class = EvaluationSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['employe', 'date_evaluation']
+
+    @action(detail=False)
+    def statistics(self, request):
+        stats = {
+            'average_score': self.queryset.aggregate(Avg('note_globale')),
+            'evaluations_count': self.queryset.count(),
+            'by_period': self.queryset.values('periode').annotate(count=Count('id'))
+        }
+        return Response(stats)
+
+class FormationViewSet(viewsets.ModelViewSet):
+    queryset = Formation.objects.all()
+    serializer_class = FormationSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['type_formation', 'statut']
+
 class PointageViewSet(viewsets.ModelViewSet):
     queryset = Pointage.objects.all()
     serializer_class = PointageSerializer
+    permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['date_pointage', 'present']
+    filterset_fields = ['employe', 'date_pointage', 'present']
 
     @action(detail=False)
-    def absences_today(self, request):
+    def today(self, request):
         today = datetime.now().date()
-        absences = self.queryset.filter(date_pointage=today, present=False)
-        serializer = self.get_serializer(absences, many=True)
+        pointages = self.queryset.filter(date_pointage=today)
+        serializer = self.get_serializer(pointages, many=True)
         return Response(serializer.data)
-
-class RecruitmentViewSet(viewsets.ModelViewSet):
-    queryset = Recruitment.objects.all()
-    serializer_class = RecruitmentSerializer
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filterset_fields = ['statut', 'type_contrat']
-    search_fields = ['titre', 'description']
 
     @action(detail=False)
-    def active_positions(self, request):
-        positions = self.queryset.filter(statut='PUBLIE')
-        serializer = self.get_serializer(positions, many=True)
+    def statistics(self, request):
+        month = datetime.now().month
+        year = datetime.now().year
+        stats = {
+            'present_today': self.queryset.filter(date_pointage=datetime.now().date(), present=True).count(),
+            'absent_today': self.queryset.filter(date_pointage=datetime.now().date(), present=False).count(),
+            'monthly_hours': self.queryset.filter(
+                date_pointage__month=month,
+                date_pointage__year=year
+            ).aggregate(Sum('heures_travaillees'))
+        }
+        return Response(stats)
+
+class CompetenceViewSet(viewsets.ModelViewSet):
+    queryset = Competence.objects.all()
+    serializer_class = CompetenceSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['nom']
+
+    @action(detail=True)
+    def employees(self, request, pk=None):
+        competence = self.get_object()
+        employees = competence.employes.all()
+        serializer = EmployeSerializer(employees, many=True)
         return Response(serializer.data)
 
-    @action(detail=True, methods=['post'])
-    def update_status(self, request, pk=None):
-        recruitment = self.get_object()
-        new_status = request.data.get('status')
-        if new_status in dict(Recruitment.STATUS_CHOICES):
-            recruitment.statut = new_status
-            recruitment.save()
-            return Response(self.get_serializer(recruitment).data)
-        return Response({'error': 'Invalid status'}, status=status.HTTP_400_BAD_REQUEST)
+class DocumentViewSet(viewsets.ModelViewSet):
+    queryset = Document.objects.all()
+    serializer_class = DocumentSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['employe', 'type_document']
+
+class HistoriqueViewSet(viewsets.ModelViewSet):
+    queryset = Historique.objects.all()
+    serializer_class = HistoriqueSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['model_name', 'date_modification']
