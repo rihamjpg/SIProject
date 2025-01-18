@@ -9,7 +9,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from .auth import register_user, candidate_register
+from .auth import register_user, candidate_register, login
 
 # Create router and register viewsets
 router = DefaultRouter()
@@ -26,10 +26,10 @@ urlpatterns = [
     path('', include(router.urls)),
     
     # Authentication
-    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('register/', register_user, name='register'),
     path('register/candidate/', candidate_register, name='candidate_register'),
+    path('login/', login, name='login'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     
     # Analytics Routes
     path('analytics/dashboard/', EmployeeViewSet.as_view({'get': 'dashboard'}), name='dashboard'),
