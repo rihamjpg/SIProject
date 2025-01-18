@@ -45,11 +45,21 @@ def login(request):
     try:
         user = User.objects.get(email=email)
         if user.check_password(password):
-            refresh = RefreshToken.for_user(user)
+            refresh = RefreshToken.for_user(user)   
+            user_type = "candidate"
+            if user.is_employee:
+                user_type = "employee"
+            elif user.is_hr:
+                user_type = "hr"
+            elif user.is_manager:
+                user_type = "manager"
+            elif user.is_superuser:
+                user_type = "admin"
+
             return Response({
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
-                'user_type': 'employee' if user.is_employee else 'candidate'
+                'user_type': user_type 
             })
     except User.DoesNotExist:
         pass

@@ -1,0 +1,183 @@
+{
+    "info": {
+        "_postman_id": "unique-id",
+        "name": "HR Management API",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Authentication",
+            "item": [
+                {
+                    "name": "Register",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/register/",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"test@example.com\",\n    \"username\": \"testuser\",\n    \"password\": \"test123!\",\n    \"is_employee\": true\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/login/",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"test123!\"\n}"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Employees",
+            "item": [
+                {
+                    "name": "Create Employee",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/employees/",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"matricule\": \"EMP001\",\n    \"nom\": \"Doe\",\n    \"prenom\": \"John\",\n    \"email_pro\": \"john.doe@company.com\",\n    \"date_naissance\": \"1990-01-01\",\n    \"date_embauche\": \"2023-01-01\",\n    \"situation_familiale\": \"CELIBATAIRE\",\n    \"niveau_etudes\": \"MASTER\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "List Employees",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": "{{base_url}}/employees/"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Services",
+            "item": [
+                {
+                    "name": "Create Service",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/services/",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"code_service\": \"IT001\",\n    \"nom_service\": \"IT Department\",\n    \"description\": \"Information Technology\"\n}"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Leaves",
+            "item": [
+                {
+                    "name": "Create Leave",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/leaves/",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"employe\": 1,\n    \"date_debut\": \"2024-03-01\",\n    \"date_fin\": \"2024-03-05\",\n    \"type_conge\": \"ANNUEL\",\n    \"nb_jours\": 5,\n    \"justification\": \"Vacances\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Pending Leaves",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": "{{base_url}}/leaves/pending/"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Analytics",
+            "item": [
+                {
+                    "name": "Dashboard",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": "{{base_url}}/analytics/dashboard/"
+                    }
+                },
+                {
+                    "name": "Absences",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": "{{base_url}}/analytics/absences/"
+                    }
+                }
+            ]
+        }
+    ]
+}
