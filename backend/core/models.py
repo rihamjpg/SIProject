@@ -374,7 +374,7 @@ class Document(models.Model):
     nom_fichier = models.CharField(max_length=255)
     date_upload = models.DateTimeField(auto_now_add=True)
     description = models.TextField(blank=True)
-    confidentialite = models.CharField(choices=CONFIDENTIALITE_CHOICES)
+    confidentialite = models.CharField(max_length=20, choices=CONFIDENTIALITE_CHOICES)
     
 class Historique(models.Model):
     model_name = models.CharField(max_length=100, verbose_name="Nom du modèle")  
@@ -387,3 +387,13 @@ class Historique(models.Model):
         return f"Modification {self.model_name} (ID {self.instance_id}) - {self.date_modification.strftime('%d/%m/%Y %H:%M')}"
 
 
+
+class CustomUser(AbstractUser):
+    email = models.EmailField(unique=True)
+    is_employee = models.BooleanField(default=False)
+    is_hr = models.BooleanField(default=False)
+    is_manager = models.BooleanField(default=False)
+    verification_token = models.CharField(max_length=100, blank=True)
+    
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']

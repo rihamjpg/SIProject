@@ -5,6 +5,8 @@ from .models import (
     Evaluation, Formation, Pointage, Competence,
     Favori, Archive, Document, Historique
 )
+from django.contrib.auth import get_user_model
+
 
 class ServiceSerializer(serializers.ModelSerializer):
     responsable_name = serializers.CharField(source='id_responsable.nom', read_only=True)
@@ -129,3 +131,19 @@ class HistoriqueSerializer(serializers.ModelSerializer):
     class Meta:
         model = Historique
         fields = '__all__'
+
+User = get_user_model()
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'email', 'username', 'password', 'is_employee', 'is_hr', 'is_manager')
+        extra_kwargs = {
+            'password': {'write_only': True},
+            'is_hr': {'read_only': True},
+            'is_manager': {'read_only': True}
+        }
+
+    def create(self, validated_data):
+        user = User.objects.create_user(**validated_data)
+        return user
