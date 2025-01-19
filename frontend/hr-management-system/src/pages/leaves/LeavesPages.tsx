@@ -1,26 +1,79 @@
-// import { Button } from "@/components/ui/button";
-// import { DataTable } from "@/components/ui/data-table";
-// import { Plus } from "lucide-react";
-// import { columns } from "./columns";
-// import { useState } from "react";
-// import { AddLeaveDialog } from "@/components/leaves/AddLeaveDialog";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { leaveService } from "@/services/leave";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 
-// const LeavesPage = () => {
-//   const [isDialogOpen, setIsDialogOpen] = useState(false);
+const statusColors = {
+  DEMANDE: "bg-yellow-100 text-yellow-800 border-yellow-200",
+  APPROUVE: "bg-green-100 text-green-800 border-green-200",
+  REFUSE: "bg-red-100 text-red-800 border-red-200",
+};
 
-//   return (
-//     <div className="space-y-6">
-//       <div className="flex justify-between items-center">
-//         <h1 className="text-3xl font-bold">Gestion des Congés</h1>
-//         <Button onClick={() => setIsDialogOpen(true)}>
-//           <Plus className="mr-2 h-4 w-4" />
-//           Demander un Congé
-//         </Button>
-//       </div>
-//       <DataTable columns={columns} data={[]} />
-//       <AddLeaveDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
-//     </div>
-//   );
-// };
+export const LeavesPage = () => {
+  const { data, isLoading } = useQuery({
+    queryKey: ["leaves"],
+    queryFn: leaveService.getAll,
+  });
 
-// export default LeavesPage;
+  if (isLoading) {
+    return <div>Chargement...</div>;
+  }
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Gestion des Congés</h1>
+      </div>
+
+      <div className="border rounded-lg">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Employé</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Début</TableHead>
+              <TableHead>Fin</TableHead>
+              <TableHead>Jours</TableHead>
+              <TableHead>Statut</TableHead>
+              <TableHead>Solde</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data?.results.map((leave) => (
+              <TableRow key={leave.id}>
+                <TableCell>{leave.employe_name}</TableCell>
+                <TableCell>{leave.type_conge}</TableCell>
+                <TableCell>
+                  {format(new Date(leave.date_debut), "dd MMM yyyy", {
+                    locale: fr,
+                  })}
+                </TableCell>
+                <TableCell>
+                  {format(new Date(leave.date_fin), "dd MMM yyyy", {
+                    locale: fr,
+                  })}
+                </TableCell>
+                <TableCell>{leave.nb_jours}</TableCell>
+                <TableCell>
+                  <Badge className={statusColors[leave.statut]}>
+                    {leave.statut}
+                  </Badge>
+                </TableCell>
+                <TableCell>{leave.solde_restant} jours</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+};
