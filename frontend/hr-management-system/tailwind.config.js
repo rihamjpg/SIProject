@@ -18,8 +18,17 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT: "hsl(213, 94%, 48%)", // Professional blue
+          foreground: "hsl(0, 0%, 100%)", // White text
+          100: "hsl(213, 94%, 95%)",
+          200: "hsl(213, 94%, 85%)",
+          300: "hsl(213, 94%, 75%)",
+          400: "hsl(213, 94%, 65%)",
+          500: "hsl(213, 94%, 48%)", // Main color
+          600: "hsl(213, 94%, 38%)",
+          700: "hsl(213, 94%, 28%)",
+          800: "hsl(213, 94%, 18%)",
+          900: "hsl(213, 94%, 8%)",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
