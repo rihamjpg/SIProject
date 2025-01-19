@@ -1,0 +1,211 @@
+
+## Core Components
+
+### 1. Models (core/models.py)
+
+#### CustomUser
+- Extends Django's AbstractUser
+- Fields:
+  - email (unique identifier)
+  - is_employee (employee status)
+  - is_hr (HR access)
+  - is_manager (management access)
+- Purpose: User authentication and authorization
+
+#### Employe
+- Main employee information storage
+- Fields:
+  - matricule (unique employee ID)
+  - personal information
+  - professional details
+- Relations:
+  - Service (ForeignKey)
+  - Contracts (reverse relation)
+  - Leaves (reverse relation)
+
+#### Service
+- Department/service management
+- Fields:
+  - code_service (unique identifier)
+  - service details
+- Relations:
+  - Employees (reverse relation)
+  - Manager (ForeignKey to Employe)
+
+#### Contrat
+- Employment contract management
+- Fields:
+  - contract type
+  - dates
+  - salary information
+- Relations:
+  - Employee (ForeignKey)
+
+#### Conge
+- Leave management
+- Fields:
+  - leave type
+  - dates
+  - status
+- Relations:
+  - Employee (ForeignKey)
+  - Validator (ForeignKey to Employe)
+
+### 2. Views (api/views.py)
+
+#### EmployeViewSet
+- CRUD operations for employees
+- Custom actions:
+  - dashboard: Employee statistics
+  - performance_metrics: KPI tracking
+
+#### CongeViewSet
+- Leave request management
+- Custom actions:
+  - pending: List pending requests
+  - approve/reject: Leave approval workflow
+
+### 3. Authentication (api/auth.py)
+
+#### register_user
+- Purpose: New employee registration
+- Process:
+  1. Validate input
+  2. Create user account
+  3. Generate JWT tokens
+
+#### login
+- Purpose: User authentication
+- Process:
+  1. Verify credentials
+  2. Generate access token
+  3. Return user type and permissions
+
+### 4. URLs Configuration
+
+#### Main URLs (config/urls.py)
+- Root URL configuration
+- Static/media file serving
+- Admin interface routing
+
+#### API URLs (api/urls.py)
+- ViewSet router registration
+- Authentication endpoints
+- Custom action routing
+
+### 5. Database Population (core/management/commands/populate_db.py)
+
+#### Command: populate_db
+- Purpose: Initialize system with test data
+- Creates:
+  1. Admin and HR users
+  2. Department structure
+  3. Sample employees
+  4. Test contracts and leaves
+
+## Key Workflows
+
+### 1. Authentication Flow
+1. User submits credentials
+2. Backend validates
+3. JWT token generated
+4. Token stored in frontend
+5. Token used for subsequent requests
+
+### 2. Employee Management
+1. HR creates employee record
+2. System generates employee ID
+3. Contract details added
+4. Service assignment
+5. Access credentials generated
+
+### 3. Leave Management
+1. Employee submits request
+2. Manager notified
+3. Request reviewed
+4. Status updated
+5. Employee notified
+
+### 4. Authorization Levels
+
+#### Admin
+- Full system access
+- User management
+- System configuration
+
+#### HR Manager
+- Employee management
+- Contract handling
+- Leave approval
+- Performance review
+
+#### Manager
+- Team management
+- Leave approval
+- Performance evaluation
+
+#### Employee
+- Profile viewing
+- Leave requests
+- Document access
+
+## API Endpoints
+
+### Authentication
+- POST /api/login/
+- POST /api/register/
+- POST /api/token/refresh/
+
+### Employees
+- GET /api/employees/
+- POST /api/employees/
+- GET /api/employees/{id}/
+- PUT /api/employees/{id}/
+- DELETE /api/employees/{id}/
+
+### Analytics
+- GET /api/analytics/dashboard/
+- GET /api/analytics/absences/
+- GET /api/analytics/recruitment/
+- GET /api/analytics/salaries/
+
+## Database Models Interaction
+
+### Employee-Service Relationship
+- One-to-Many: Service -> Employees
+- Service tracks employee count
+- Employee requires service assignment
+
+### Contract-Employee Relationship
+- One-to-Many: Employee -> Contracts
+- Contract status affects employee status
+- Salary information linked to contract
+
+### Leave-Employee Relationship
+- One-to-Many: Employee -> Leaves
+- Leave balance tracked per employee
+- Manager approval workflow
+
+## Security Implementation
+
+### Authentication
+- JWT token based
+- Token refresh mechanism
+- Password hashing
+
+### Authorization
+- Role-based access control
+- Object-level permissions
+- Service-level restrictions
+
+## Data Validation
+
+### Model Validation
+- Field-level constraints
+- Business logic rules
+- Data integrity checks
+
+### API Validation
+- Input sanitization
+- Permission verification
+- Data format validation
