@@ -1,5 +1,16 @@
 import { NavLink } from "react-router-dom";
-import { Home, Users, Calendar, FileText, BarChart } from "lucide-react";
+import {
+  Home,
+  Users,
+  Calendar,
+  FileText,
+  BarChart,
+  DollarSign,
+  Clock,
+  History,
+  ClipboardCheck,
+  Brain,
+} from "lucide-react";
 
 const navigation = [
   { name: "Tableau de bord", href: "/", icon: Home },
@@ -7,6 +18,41 @@ const navigation = [
   { name: "Congés", href: "/leaves", icon: Calendar },
   { name: "Contrats", href: "/contracts", icon: FileText },
   { name: "Analytics", href: "/analytics", icon: BarChart },
+  {
+    name: "Salaires",
+    href: "/salaries",
+    icon: DollarSign,
+  },
+  {
+    name: "Pointages",
+    href: "/attendance",
+    icon: Clock,
+  },
+  {
+    name: "Historique",
+    href: "/history",
+    icon: History,
+  },
+  {
+    name: "Évaluations",
+    href: "/evaluations",
+    icon: ClipboardCheck,
+  },
+  {
+    name: "Compétences",
+    href: "/skills",
+    icon: Brain,
+  },
+  {
+    name: "Candidatures",
+    href: "/applications",
+    icon: FileText,
+  },
+  {
+    name: "Avances (Massrouf)",
+    href: "/massrouf",
+    icon: DollarSign,
+  },
 ];
 
 export const Sidebar = () => {
