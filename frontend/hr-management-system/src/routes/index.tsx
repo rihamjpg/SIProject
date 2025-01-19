@@ -16,6 +16,7 @@ import { EvaluationsPage } from "@/pages/evaluation/EvaluationPage";
 import { ApplicationsPage } from "@/pages/application/ApplicationsPage";
 import { SkillsPage } from "@/pages/skill/SkillsPage";
 import { MassroufPage } from "@/pages/massrouf/MassroufPage";
+import { RecruitmentsPage } from "@/pages/recruitement/RecruitementsPage";
 
 export const AppRoutes = () => {
   return (
@@ -43,6 +44,7 @@ export const AppRoutes = () => {
         <Route path="/applications" element={<ApplicationsPage />} />
         <Route path="/skills" element={<SkillsPage />} />
         <Route path="/massrouf" element={<MassroufPage />} />
+        <Route path="/recruitments" element={<RecruitmentsPage />} />
 
         <Route path="*" element={<div>404 Not Found</div>} />
       </Route>

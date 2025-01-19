@@ -10,6 +10,7 @@ import {
   History,
   ClipboardCheck,
   Brain,
+  Briefcase,
 } from "lucide-react";
 
 const navigation = [
@@ -47,6 +48,11 @@ const navigation = [
     name: "Candidatures",
     href: "/applications",
     icon: FileText,
+  },
+  {
+    name: "Recrutements", // Add this new section
+    href: "/recruitments",
+    icon: Briefcase,
   },
   {
     name: "Avances (Massrouf)",
