@@ -48,7 +48,7 @@ urlpatterns = [
     path('analytics/dashboard/', EmployeViewSet.as_view({'get': 'dashboard'}), name='dashboard'),
     path('analytics/absences/', CongeViewSet.as_view({'get': 'absence_report'}), name='absence-report'),
     path('analytics/recruitment/', RecrutementViewSet.as_view({'get': 'recruitment_stats'}), name='recruitment-stats'),
-    path('analytics/salaries/', SalaireViewSet.as_view({'get': 'salary_stats'}), name='salary-stats'),
+    path('analytics/salaries/', SalaireViewSet.as_view({'get': 'process_monthly'}), name='salary-stats'),
     
     # Custom Actions
     path('contracts/expiring/', ContratViewSet.as_view({'get': 'expiring_soon'}), name='expiring-contracts'),

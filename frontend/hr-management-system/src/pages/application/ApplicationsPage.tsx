@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, CheckCircle, XCircle } from "lucide-react";
 
 export const ApplicationsPage = () => {
-  const { data, isLoading } = useQuery({
+  const { data } = useQuery({
     queryKey: ["applications"],
     queryFn: applicationService.getAll,
   });

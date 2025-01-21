@@ -58,6 +58,15 @@ export const authService = {
 
   async register(data: any) {
     const response = await api.post("/register/", data);
+    const { access, refresh, user_type } = response.data;
+    Cookies.set("access_token", access);
+    Cookies.set("refresh_token", refresh);
+    Cookies.set("user_type", user_type);
+    return response.data;
+  },
+
+  registerCandidate: async (data: any) => {
+    const response = await axios.post("/api/register/candidate/", data);
     return response.data;
   },
 

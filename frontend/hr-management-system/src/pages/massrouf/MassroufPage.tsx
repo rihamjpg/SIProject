@@ -19,7 +19,7 @@ const statusColors = {
 };
 
 export const MassroufPage = () => {
-  const { data, isLoading } = useQuery({
+  const { data } = useQuery({
     queryKey: ["massroufs"],
     queryFn: massroufService.getAll,
   });

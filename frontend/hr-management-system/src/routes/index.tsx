@@ -17,11 +17,13 @@ import { ApplicationsPage } from "@/pages/application/ApplicationsPage";
 import { SkillsPage } from "@/pages/skill/SkillsPage";
 import { MassroufPage } from "@/pages/massrouf/MassroufPage";
 import { RecruitmentsPage } from "@/pages/recruitement/RecruitementsPage";
+import { RegisterForm } from "@/components/auth/RegisterForm";
 
 export const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/login" element={<LoginForm />} />
+      <Route path="/register" element={<RegisterForm />} />
       <Route
         path="/"
         element={

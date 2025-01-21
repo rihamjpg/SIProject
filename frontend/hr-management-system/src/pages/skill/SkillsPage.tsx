@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { skillService } from "@/services/skill";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Brain } from "lucide-react";
+// import { Brain } from "lucide-react";
 
 export const SkillsPage = () => {
   const { data, isLoading } = useQuery({
