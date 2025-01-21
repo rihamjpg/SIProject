@@ -76,9 +76,19 @@ export const AddEmployeePage = () => {
       });
       navigate("/employees");
     },
+    onError: (error) => {
+      console.error("Error creating employee:", error);
+      toast({
+        title: "Erreur",
+        description:
+          "Une erreur s'est produite lors de la création de l'employé",
+        className: "bg-red-50 border-red-500 text-red-900",
+      });
+    },
   });
 
   const onSubmit = (data: Employee) => {
+    console.log("Submitting form data:", data);
     mutation.mutate(data);
   };
 
@@ -96,11 +106,9 @@ export const AddEmployeePage = () => {
         <h1 className="text-3xl font-bold">Ajouter un employé</h1>
       </div>
 
-      {/* Same form structure as EmployeeDetails edit mode */}
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={() => onSubmit(form.getValues())} className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Personal Information Card */}
             <Card>
               <CardHeader>
                 <CardTitle>Informations Personnelles</CardTitle>
@@ -136,7 +144,11 @@ export const AddEmployeePage = () => {
                       <FormItem>
                         <FormLabel>Nom</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value || ""} />
+                          <Input
+                            {...field}
+                            value={field.value || ""}
+                            required
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -149,7 +161,11 @@ export const AddEmployeePage = () => {
                       <FormItem>
                         <FormLabel>Prénom</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value || ""} />
+                          <Input
+                            {...field}
+                            value={field.value || ""}
+                            required
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -162,7 +178,7 @@ export const AddEmployeePage = () => {
                       <FormItem>
                         <FormLabel>Date de naissance</FormLabel>
                         <FormControl>
-                          <Input type="date" {...field} />
+                          <Input type="date" {...field} required />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -177,6 +193,7 @@ export const AddEmployeePage = () => {
                         <Select
                           onValueChange={field.onChange}
                           defaultValue={field.value}
+                          required
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Sélectionnez..." />
@@ -228,7 +245,7 @@ export const AddEmployeePage = () => {
                       <FormItem>
                         <FormLabel>Adresse</FormLabel>
                         <FormControl>
-                          <Textarea {...field} />
+                          <Textarea {...field} required />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -241,7 +258,11 @@ export const AddEmployeePage = () => {
                       <FormItem>
                         <FormLabel>Téléphone mobile</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value || ""} />
+                          <Input
+                            {...field}
+                            value={field.value || ""}
+                            required
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -254,7 +275,11 @@ export const AddEmployeePage = () => {
                       <FormItem>
                         <FormLabel>Téléphone fixe</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value || ""} />
+                          <Input
+                            {...field}
+                            value={field.value || ""}
+                            required
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -267,7 +292,7 @@ export const AddEmployeePage = () => {
                       <FormItem>
                         <FormLabel>Email professionnel</FormLabel>
                         <FormControl>
-                          <Input type="email" {...field} />
+                          <Input type="email" {...field} required />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -280,7 +305,7 @@ export const AddEmployeePage = () => {
                       <FormItem>
                         <FormLabel>Email personnel</FormLabel>
                         <FormControl>
-                          <Input type="email" {...field} />
+                          <Input type="email" {...field} required />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -302,7 +327,11 @@ export const AddEmployeePage = () => {
                       <FormItem>
                         <FormLabel>Poste occupé</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value || ""} />
+                          <Input
+                            {...field}
+                            value={field.value || ""}
+                            required
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -315,7 +344,7 @@ export const AddEmployeePage = () => {
                       <FormItem>
                         <FormLabel>Date d'embauche</FormLabel>
                         <FormControl>
-                          <Input type="date" {...field} />
+                          <Input type="date" {...field} required />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -328,7 +357,11 @@ export const AddEmployeePage = () => {
                       <FormItem>
                         <FormLabel>Niveau d'études</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value || ""} />
+                          <Input
+                            {...field}
+                            value={field.value || ""}
+                            required
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -341,7 +374,11 @@ export const AddEmployeePage = () => {
                       <FormItem>
                         <FormLabel>Diplôme</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value || ""} />
+                          <Input
+                            {...field}
+                            value={field.value || ""}
+                            required
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -370,7 +407,6 @@ export const AddEmployeePage = () => {
             </Card>
           </div>
 
-          {/* Additional Documents Card */}
           <Card>
             <CardHeader>
               <CardTitle>Documents</CardTitle>
@@ -401,7 +437,6 @@ export const AddEmployeePage = () => {
             </CardContent>
           </Card>
 
-          {/* Form Actions */}
           <div className="flex justify-end space-x-4">
             <Button
               type="button"

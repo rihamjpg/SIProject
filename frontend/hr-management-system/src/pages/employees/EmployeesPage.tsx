@@ -25,12 +25,18 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { PaginatedResponse } from "@/types/pagination";
+import { Input } from "@/components/ui/input";
 
 const EmployeesPage = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<
     Employee | undefined
   >();
+  const [search, setSearch] = useState("");
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof Employee;
+    direction: "asc" | "desc";
+  } | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -46,7 +52,55 @@ const EmployeesPage = () => {
 
   const employees = data?.results || [];
 
-  console.log(employees[0]);
+  const filteredEmployees = employees.filter((employee) => {
+    return (
+      employee.matricule.toLowerCase().includes(search.toLowerCase()) ||
+      employee.nom.toLowerCase().includes(search.toLowerCase()) ||
+      employee.prenom.toLowerCase().includes(search.toLowerCase()) ||
+      employee.email_pro.toLowerCase().includes(search.toLowerCase()) ||
+      employee.service_name.toLowerCase().includes(search.toLowerCase()) ||
+      employee.adresse.toLowerCase().includes(search.toLowerCase()) ||
+      employee.date_embauche.toLowerCase().includes(search.toLowerCase()) ||
+      employee.date_naissance.toLowerCase().includes(search.toLowerCase()) ||
+      employee.diplome.toLowerCase().includes(search.toLowerCase()) ||
+      employee.email_perso.toLowerCase().includes(search.toLowerCase()) ||
+      employee.niveau_etudes.toLowerCase().includes(search.toLowerCase()) ||
+      employee.numero_securite_sociale
+        .toLowerCase()
+        .includes(search.toLowerCase()) ||
+      employee.poste_occupe.toLowerCase().includes(search.toLowerCase()) ||
+      employee.situation_familiale
+        .toLowerCase()
+        .includes(search.toLowerCase()) ||
+      employee.telephone_fixe?.toLowerCase().includes(search.toLowerCase()) ||
+      employee.telephone_mobile.toLowerCase().includes(search.toLowerCase())
+    );
+  });
+
+  const sortedEmployees = filteredEmployees.sort((a, b) => {
+    if (sortConfig !== null) {
+      const { key, direction } = sortConfig;
+      if (a[key] < b[key]) {
+        return direction === "asc" ? -1 : 1;
+      }
+      if (a[key] > b[key]) {
+        return direction === "asc" ? 1 : -1;
+      }
+    }
+    return 0;
+  });
+
+  const requestSort = (key: keyof Employee) => {
+    let direction: "asc" | "desc" = "asc";
+    if (
+      sortConfig &&
+      sortConfig.key === key &&
+      sortConfig.direction === "asc"
+    ) {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
 
   if (isError) {
     return <div>Une erreur est survenue: {error.message}</div>;
@@ -86,15 +140,30 @@ const EmployeesPage = () => {
         </Button>
       </div>
 
-      <div className="rounded-md border">
+      <div className="rounded-md border p-4">
+        <Input
+          placeholder="Rechercher..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="mb-4"
+        />
+
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Matricule</TableHead>
-              <TableHead>Nom</TableHead>
-              <TableHead>Prénom</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Service</TableHead>
+              <TableHead onClick={() => requestSort("matricule")}>
+                Matricule
+              </TableHead>
+              <TableHead onClick={() => requestSort("nom")}>Nom</TableHead>
+              <TableHead onClick={() => requestSort("prenom")}>
+                Prénom
+              </TableHead>
+              <TableHead onClick={() => requestSort("email_pro")}>
+                Email
+              </TableHead>
+              <TableHead onClick={() => requestSort("service_name")}>
+                Service
+              </TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -105,14 +174,14 @@ const EmployeesPage = () => {
                   Chargement...
                 </TableCell>
               </TableRow>
-            ) : employees.length === 0 ? (
+            ) : sortedEmployees.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center">
                   Aucun employé trouvé
                 </TableCell>
               </TableRow>
             ) : (
-              employees.map((employee: Employee) => (
+              sortedEmployees.map((employee: Employee) => (
                 <TableRow key={employee.id_employe}>
                   <TableCell>{employee.matricule}</TableCell>
                   <TableCell>{employee.nom}</TableCell>

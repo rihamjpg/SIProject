@@ -135,7 +135,7 @@ export const EmployeeDetails = () => {
                 Annuler
               </Button>
               <Button
-                onClick={form.handleSubmit(onSubmit)}
+                onClick={() => onSubmit(form.getValues())}
                 className="bg-green-600 hover:bg-green-700 text-white"
                 disabled={mutation.isPending}
               >

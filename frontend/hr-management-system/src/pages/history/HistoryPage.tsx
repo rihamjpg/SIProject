@@ -9,7 +9,7 @@ export const HistoryPage = () => {
     queryKey: ["history"],
     queryFn: historyService.getAll,
   });
-
+  console.log(data?.results);
   if (isLoading) return <div>Chargement...</div>;
 
   return (

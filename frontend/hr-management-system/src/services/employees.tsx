@@ -7,6 +7,7 @@ import {
 
 export const employeeService = {
   getAll: async () => {
+    console.log("getAll");
     const { data } = await api.get<Employee[]>("/employees/");
     return data;
   },
@@ -17,6 +18,7 @@ export const employeeService = {
   },
 
   create: async (employee: CreateEmployeeDTO) => {
+    console.log(employee);
     const { data } = await api.post<Employee>("/employees/", employee);
     return data;
   },
@@ -27,6 +29,7 @@ export const employeeService = {
   },
 
   delete: async (id: number) => {
+    console.log("delete id ", id);
     await api.delete(`/employees/${id}/`);
   },
 };
