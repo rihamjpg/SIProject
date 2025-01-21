@@ -83,7 +83,7 @@ class Contrat(models.Model):
         ('STAGE', 'Stage'),
         ('APPRENTISSAGE', 'Contrat d’apprentissage'),
     ]
-    employe = models.ForeignKey(Employe, on_delete=models.PROTECT)
+    employe = models.ForeignKey(Employe, on_delete=models.SET_DEFAULT, related_name='contrats', default=0)
     type_contrat = models.CharField(max_length=20, choices=TYPE_CONTRAT_CHOICES)
     date_debut = models.DateField()
     date_fin = models.DateField(null=True, blank=True)
@@ -155,7 +155,7 @@ class Conge(models.Model):
 
     
 class Salaire(models.Model):
-    employe = models.ForeignKey(Employe, on_delete=models.PROTECT)
+    employe = models.ForeignKey(Employe, on_delete=models.SET_DEFAULT, null=True, related_name='salaires', default=0)
     contrat = models.ForeignKey(Contrat, on_delete=models.PROTECT)
     date_paiement = models.DateField()
     salaire_base = models.DecimalField(max_digits=10, decimal_places=2)
@@ -266,9 +266,9 @@ class Candidature(models.Model):
         return f"Candidature de {self.candidat} pour {self.recrutement}"
 
 class Evaluation(models.Model):
-    employe = models.ForeignKey(Employe, on_delete=models.CASCADE)
+    employe = models.ForeignKey(Employe, on_delete=models.SET_DEFAULT, null=True, related_name='evaluations', default=0)
     date_evaluation = models.DateField()
-    evaluateur = models.ForeignKey(Employe, on_delete=models.PROTECT, related_name='evaluations_effectuees')
+    evaluateur = models.ForeignKey(Employe, on_delete=models.SET_DEFAULT, null=True, related_name='evaluations_effectuees', default=0)
     note_globale = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(20)])
     commentaires = models.TextField()
     periode = models.CharField(max_length=50)
@@ -288,7 +288,7 @@ class Formation(models.Model):
     description = models.TextField()
     date_debut = models.DateField()
     date_fin = models.DateField()
-    formateur = models.ForeignKey(Employe, on_delete=models.PROTECT)
+    formateur = models.ForeignKey(Employe, on_delete=models.SET_DEFAULT, null=True, related_name='formations_animees', default=0)
     lieu = models.CharField(max_length=200)
     cout = models.DecimalField(max_digits=10, decimal_places=2)
     duree_heures = models.PositiveIntegerField()
@@ -306,7 +306,7 @@ class Formation(models.Model):
             raise ValidationError("La date de fin doit être ultérieure à la date de début.")
 
     def __str__(self):
-        return f"Formation {self.titre} - {self.employe}"
+        return f"Formation {self.titre} - {self.formateur}"
 
 class Pointage(models.Model):
     employe = models.ForeignKey(Employe, on_delete=models.CASCADE)
